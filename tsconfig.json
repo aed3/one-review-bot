@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "skipLibCheck": false,
+        "moduleResolution": "node",
+        "outDir": "./lib",
+        "rootDir": "./",
+        "sourceMap": true
+    },
+    "include": [
+        "./src/*",
+        "./test"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

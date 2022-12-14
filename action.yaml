@@ -1,0 +1,63 @@
+name: "one-review-bot"
+description: "CSpell, Clang-Tidy, & Clang-Format Runner"
+author: "aed3"
+inputs:
+  github_token:
+    default: ${{ github.token }}
+    required: true
+  incremental_files_only:
+    description: >
+      Limit the files checked to the ones in the pull request.
+    default: true
+    required: false
+  files_config:
+    description: |
+      Path to file that defines glob patterns to filter the files to be included. Use a new line between patterns to define multiple patterns.
+      The default is to check ALL files that were changed in in the pull_request.
+      Note: `ignorePaths` defined in cspell.json still apply.
+      Example files:
+        **/*.{cpp,hpp,h,c}
+        !dist/**/*.{cpp,hpp,h,c}
+    required: false
+  cspell_config:
+    description: >
+      Path to `cspell.json` or equivalent file.
+    default: 
+    required: false
+  clang_tidy_config:
+    description: >
+      Path to `.clang-tidy` or equivalent file.
+    default: .clang-tidy
+    required: false
+  clang_format_config:
+    description: >
+      Path to `.clang-format` or equivalent file.
+    default: .clang-format
+    required: false
+  max_diff_length:
+    description: >
+      The maximum number of lines to display when comparing the current code with the correctly-styled output from clang-format.
+    default: 20
+    required: false
+  max_duplicate_problems:
+    description: >
+      The maximum number of times the same word can be flagged as an error in a file.
+    default: 5
+    required: false
+  root:
+    description: >
+      The point in the directory tree to start start looking for files to check.
+    default: .
+    required: false
+  verbose:
+    description: |
+      Increase the log output.
+    default: false
+    required: false
+
+runs:
+  using: "node16"
+  main: "./lib/src/index.js"
+branding:
+  icon: "code"
+  color: "green"
