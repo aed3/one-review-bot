@@ -1,6 +1,6 @@
 import {execSync} from 'child_process'
 
-execSync('npm i');
+execSync('npm i', {cwd: __dirname});
 
 import {getActionParams} from './actionParams';
 import {action as clang} from './clang'
