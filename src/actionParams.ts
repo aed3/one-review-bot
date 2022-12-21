@@ -13,6 +13,7 @@ export interface ActionParams {
   max_diff_length: number;
   max_duplicate_problems: number
   root: string;
+  build_path: string;
   /**
    * Increases the amount of information logged during the action.
    * true - show progress
@@ -34,6 +35,7 @@ const defaultActionParams: ActionParams = {
   max_diff_length: 20,
   max_duplicate_problems: 5,
   root: '',
+  build_path: '.',
   verbose: false,
 };
 
@@ -76,12 +78,16 @@ function validateTrueFalse(key: keyof ActionParams, msg: string): ValidationFunc
   };
 }
 
-
-function validateRoot(params: ActionParams) {
-  const root = params.root;
-  const success = !root || existsSync(root);
-  return !success ? `Root path does not exist: "${root}"` : undefined;
+function validateFolder(key: keyof ActionParams): ValidationFunction {
+  return (params: ActionParams) => {
+    const folder = params[key];
+    const success = !folder || existsSync(folder as string);
+    return !success ? `${key} path does not exist: "${folder}"` : undefined;
+  };
 }
+
+const validateRoot = validateFolder('root');
+const validateBuildPath = validateFolder('root');
 
 const validateIncrementalFilesOnly =
   validateTrueFalse('incremental_files_only', 'Invalid incremental_files_only setting, must be one of (true, false)');
@@ -97,6 +103,7 @@ const validateMaxDuplicateProblems = validateNumber('max_duplicate_problems');
 function validateActionParams(params: ActionParams) {
   const validations: ValidationFunction[] = [
     validateRoot,
+    validateBuildPath,
     validateToken,
     validateIncrementalFilesOnly,
     validateFilesConfig,
@@ -149,6 +156,7 @@ export function getActionParams(): ActionParams {
     max_diff_length: parseInt(core.getInput('max_diff_length')),
     max_duplicate_problems: parseInt(core.getInput('max_duplicate_problems')),
     root: core.getInput('root'),
+    build_path: core.getInput('build_path'),
     verbose: tf(core.getInput('verbose')),
   });
 

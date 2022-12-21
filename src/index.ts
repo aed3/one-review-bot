@@ -1,3 +1,7 @@
+import {execSync} from 'child_process'
+
+execSync('npm i');
+
 import {getActionParams} from './actionParams';
 import {action as clang} from './clang'
 import {action as cspell} from './cspell'

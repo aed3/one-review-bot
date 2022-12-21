@@ -103,7 +103,7 @@ export function action(params: ActionParams, files: string[]): Issues {
 
   if (params.clang_tidy_config) {
     issues.tidy = {};
-    const tidyCmd = ['clang-tidy', '--config-file', `${params.clang_tidy_config}`];
+    const tidyCmd = ['clang-tidy', '--config-file', params.clang_tidy_config, '-p', params.build_path];
     runClang(tidyCmd, params, files, issues.tidy, parseTidyOutput);
   }
 

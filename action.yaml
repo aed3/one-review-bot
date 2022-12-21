@@ -49,6 +49,11 @@ inputs:
       The point in the directory tree to start start looking for files to check.
     default: .
     required: false
+  build_path:
+    description: >
+      The point in the directory tree to look for build configs. Used by clang-tidy
+    default: .
+    required: false
   verbose:
     description: |
       Increase the log output.
