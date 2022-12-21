@@ -51,7 +51,7 @@ inputs:
     required: false
   build_path:
     description: >
-      The point in the directory tree to look for build configs. Used by clang-tidy
+      The point in the directory tree to look for build configs. Used by clang-tidy.
     default: .
     required: false
   verbose:

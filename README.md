@@ -71,6 +71,9 @@ jobs:
           # The point in the directory tree to start looking for files to check.
           root: .
 
+          # The point in the directory tree to look for build configs. Used by clang-tidy.
+          build_path: .
+
           # Increase the log output.
           verbose: false
 ```
