@@ -44,11 +44,13 @@ function parseTidyOutput(result: string, details: ClangIssueDetails[]) {
   const lines = result.split('\n');
   verbose('\t\t', lines.length.toString(), 'line output from clang');
 
+  const addDetail = () => details.push({...detail, replacement: replacementLines.join('\n').trim()} as ClangIssueDetails);
+
   for (const line of lines) {
     const match = NOTE_HEADER.exec(line);
     if (match) {
       if (detail) {
-        details.push({...detail, replacement: replacementLines.join('\n').trim()} as ClangIssueDetails);
+        addDetail();
       }
       detail = {
         level: match[3] as IssueLevel,
@@ -62,6 +64,10 @@ function parseTidyOutput(result: string, details: ClangIssueDetails[]) {
     else if (detail) {
       replacementLines.push(line);
     }
+  }
+
+  if (detail && replacementLines.length) {
+    addDetail();
   }
 }
 
