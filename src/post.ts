@@ -206,7 +206,7 @@ async function getExistingReviewComments(githubContext: ContextInstance, octokit
   });
 
   verbose('Found', pluralize('comment', comments.data.length), 'on this PR');
-  comments.data.forEach(comment => verbose(comment.body.split('\n').slice(0, 3).join(), '\n\n', (comment.body_html?.split('\n').slice(0, 3).join() ?? '')));
+  comments.data.forEach(comment => verbose('\t' + comment.body.split('\n').slice(0, 3).join('\t\n')));
   return comments.data.filter(comment => comment.body.startsWith(REVIEW_TAG));
 }
 

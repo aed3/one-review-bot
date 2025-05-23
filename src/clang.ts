@@ -1,11 +1,12 @@
 import {execSync} from 'child_process';
 import {structuredPatch} from 'diff'
-import {readFileSync} from 'fs';
+import {readdirSync, readFileSync} from 'fs';
 
 import {ActionParams} from './actionParams';
 import {core} from './github';
 import {info, IssueLevel, verbose} from './log';
 import {ClangIssueDetails, ClangTypeIssues, Issues} from './post';
+import {join} from 'path';
 
 function parseFormatOutput(newCode: string, details: ClangIssueDetails[], file: string, params: ActionParams) {
   const oldCode = readFileSync(file, 'utf8');
@@ -85,7 +86,7 @@ function runClang(clangCmd: string[],
       result = execSync(clangCmd.concat(file).join(' '), {stdio: 'pipe'}).toString();
     }
     catch (e) {
-      verbose('\t\tError ' + e.message);
+      verbose('\t\tError: ' + e.message.replace(/\n/g, '\t\n'));
       result = e.message + '\n' + (e.stdout?.toString() || '');
     }
 
@@ -112,6 +113,8 @@ export function action(params: ActionParams, files: string[]): Issues {
   if (params.clang_tidy_config) {
     issues.tidy = {};
     const tidyCmd = ['clang-tidy', '--config-file', params.clang_tidy_config, '-p', params.build_path];
+    verbose('Build path files:');
+    readdirSync(params.build_path).forEach(file => verbose('\t', join(params.build_path, file)));
     runClang(tidyCmd, params, files, issues.tidy, parseTidyOutput);
   }
 
