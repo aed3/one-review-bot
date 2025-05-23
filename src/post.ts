@@ -200,13 +200,13 @@ function createPullRequestComment(issues: Issues) {
 }
 
 async function getExistingReviewComments(githubContext: ContextInstance, octokit: GitHubInstance, prNumber: number) {
-  const comments = await octokit.rest.pulls.listReviewComments({
+  const comments = await octokit.rest.issues.listComments({
     ...githubContext.repo,
-    pull_number: prNumber,
+    issue_number: prNumber,
   });
 
   verbose('Found', pluralize('comment', comments.data.length), 'on this PR');
-  comments.data.forEach(comment => verbose(comment.body.split('\n').slice(0, 3).join(), '\n\n', (comment.body_html?.split('\n').slice(0, 3).join() ?? '')))
+  comments.data.forEach(comment => verbose(comment.body.split('\n').slice(0, 3).join(), '\n\n', (comment.body_html?.split('\n').slice(0, 3).join() ?? '')));
   return comments.data.filter(comment => comment.body.startsWith(REVIEW_TAG));
 }
 
