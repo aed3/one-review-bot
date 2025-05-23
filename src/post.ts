@@ -2,7 +2,7 @@
 import {extname} from 'path'
 
 import {ContextInstance, GitHubInstance} from './github';
-import {AnnotationProperties, info, IssueLevel} from './log';
+import {AnnotationProperties, info, IssueLevel, verbose} from './log';
 
 type ClangType = 'tidy'|'format';
 type IssueType = 'spelling'|ClangType;
@@ -205,6 +205,8 @@ async function getExistingReviewComments(githubContext: ContextInstance, octokit
     pull_number: prNumber,
   });
 
+  verbose('Found', pluralize('comment', comments.data.length), 'on this PR');
+  comments.data.forEach(comment => verbose(comment.body.split('\n').slice(0, 3).join(), '\n\n', (comment.body_html?.split('\n').slice(0, 3).join() ?? '')))
   return comments.data.filter(comment => comment.body.startsWith(REVIEW_TAG));
 }
 
@@ -213,7 +215,7 @@ export async function postComments(issues: Issues, githubContext: ContextInstanc
 
   const prNumber = githubContext.payload.pull_request?.number;
   const pastComments = await getExistingReviewComments(githubContext, octokit, prNumber);
-  info('Found', pluralize('past comment', pastComments.length));
+  info('Found', pluralize('past bot comment', pastComments.length));
 
   const lastBotComment = pastComments[pastComments.length - 1];
   const hasIdenticalComment = lastBotComment?.body === comment;

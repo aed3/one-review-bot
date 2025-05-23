@@ -64,7 +64,7 @@ if (DEBUGGING) {
     issues: {
       async createComment(obj) {
         const {body, ...rest} = obj;
-        console.log('issue.createComment', rest, 'body:', body?.split('\n').slice(0, 3).join('\n'));
+        console.log('issue.createComment', rest, 'body:\n', body);
       },
     },
   };

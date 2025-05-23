@@ -42,7 +42,8 @@ function parseTidyOutput(result: string, details: ClangIssueDetails[]) {
   let detail: Partial<ClangIssueDetails>|null = null;
   let replacementLines: string[] = [];
   const lines = result.split('\n');
-  verbose('\t\t', lines.length.toString(), 'line output from clang');
+  verbose('\t ', lines.length.toString(), 'line output from clang:');
+  lines.forEach(line => verbose('\t  ' + line));
 
   const addDetail = () => details.push({...detail, replacement: replacementLines.join('\n').trim()} as ClangIssueDetails);
 
@@ -84,6 +85,7 @@ function runClang(clangCmd: string[],
       result = execSync(clangCmd.concat(file).join(' '), {stdio: 'pipe'}).toString();
     }
     catch (e) {
+      verbose('\t\tError ' + e.message);
       result = e.message + '\n' + (e.stdout?.toString() || '');
     }
 
