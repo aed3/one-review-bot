@@ -228,7 +228,7 @@ export async function postComments(issues: Issues, githubContext: ContextInstanc
     await octokit.rest.issues.createComment({
       ...githubContext.repo,
       issue_number: prNumber,
-      body: comment,
+      body: comment.substring(0, 65535),
     });
   }
 

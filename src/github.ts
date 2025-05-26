@@ -42,15 +42,6 @@ if (DEBUGGING) {
       async listCommits() {
         return {data: [{sha: '0000000000'}]};
       },
-      async listReviewComments() {
-        return {
-          data: [{
-            user: {type: 'Bot'},
-            body: '<!-- one-review-bot comment -->',
-            pull_request_url: 'https://github.com/user/repo/pull/1',
-          }],
-        };
-      },
     },
     repos: {
       async getCommit() {
@@ -65,6 +56,15 @@ if (DEBUGGING) {
       async createComment(obj) {
         const {body, ...rest} = obj;
         console.log('issue.createComment', rest, 'body:\n', body);
+      },
+      async listComments() {
+        return {
+          data: [{
+            user: {type: 'Bot'},
+            body: '<!-- one-review-bot comment -->',
+            pull_request_url: 'https://github.com/user/repo/pull/1',
+          }],
+        };
       },
     },
   };
