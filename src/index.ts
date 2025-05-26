@@ -29,7 +29,7 @@ export async function run(): Promise<void> {
 
     const issues = {};
     const spellIssues = await cspell(params, files);
-    const clangIssues = clang(params, files);
+    const clangIssues = await clang(params, files);
 
     Object.assign(issues, spellIssues);
     Object.assign(issues, clangIssues);

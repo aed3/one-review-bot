@@ -30,7 +30,7 @@ const defaultActionParams: ActionParams = {
   incremental_files_only: true,
   files_config: '',
   cspell_config: '',
-  clang_tidy_config: '.clang-tidy',
+  clang_tidy_config: '',
   clang_format_config: '.clang-format',
   max_diff_length: 20,
   max_duplicate_problems: 5,
