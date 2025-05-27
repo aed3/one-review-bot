@@ -2,7 +2,7 @@
 import {extname} from 'path'
 
 import {ContextInstance, GitHubInstance} from './github';
-import {AnnotationProperties, info, IssueLevel, verbose} from './log';
+import {AnnotationProperties, debug, info, IssueLevel, verbose} from './log';
 
 type ClangType = 'tidy'|'format';
 type IssueType = 'spelling'|ClangType;
@@ -90,9 +90,13 @@ function createCommentForClang(lines: string[], issues: Issues, type: ClangType,
   const [typeIssues, totalIssues] = listForSuggestionClang(issues, type);
   const annotations: AnnotationProperties[] = [];
 
-  if (totalIssues) {
-    lines.push('', typeHeader(emoji, totalIssues, type, ranCmd));
-    for (const [file, details] of typeIssues) {
+  if (!totalIssues) {
+    return annotations;
+  }
+
+  lines.push('', typeHeader(emoji, totalIssues, type, ranCmd));
+  for (const [file, details] of typeIssues) {
+    try {
       const ext = type === 'format' ? 'diff' : extname(file).substring(1);
       if (!details.length) continue;
 
@@ -109,25 +113,33 @@ function createCommentForClang(lines: string[], issues: Issues, type: ClangType,
 
       wrapInFileSection(lines, file, () => {
         for (const issue of details) {
-          wrapInOpenedSection(lines, `<strong>${issueLocation(file, issue)}</strong>: ${issue.name}`, () => {
-            lines.push(`> ${escape(issue.message)}`, '');
-            if (issue.replacement) {
-              createCodeBlock(lines, ext, issue.replacement);
-            }
-          });
-
-          if (type === 'tidy') {
-            annotations.push({
-              command: issue.level,
-              file,
-              startLine: issue.line,
-              startColumn: issue.col,
-              title: `Clang Tidy ${toTitleCase(issue.level)}: ${issue.name}`,
-              message: issue.message,
+          try {
+            wrapInOpenedSection(lines, `<strong>${issueLocation(file, issue)}</strong>: ${issue.name}`, () => {
+              lines.push(`> ${escape(issue.message)}`, '');
+              if (issue.replacement) {
+                createCodeBlock(lines, ext, issue.replacement);
+              }
             });
+
+            if (type === 'tidy') {
+              annotations.push({
+                command: issue.level,
+                file,
+                startLine: issue.line,
+                startColumn: issue.col,
+                title: `Clang Tidy ${toTitleCase(issue.level)}: ${issue.name}`,
+                message: issue.message,
+              });
+            }
+          }
+          catch (e) {
+            debug(e.toString());
           }
         }
       });
+    }
+    catch (e) {
+      debug(e.toString());
     }
   }
 
@@ -138,13 +150,19 @@ function createCommentForSpelling(lines: string[], spellingIssues: SpellingTypeI
   if (!spellingIssues) return [];
   const annotations: AnnotationProperties[] = [];
 
-  const totalIssues = Object.values(spellingIssues)
-    .reduce((total, words) => total + Object.values(words)
-      .reduce((subTotal, issues) => subTotal + issues.instances.length, 0), 0);
+  const totalIssues =
+    Object.values(spellingIssues)
+      .reduce((total, words) =>
+                total + Object.values(words).reduce((subTotal, issues) => subTotal + issues.instances.length, 0),
+        0);
 
-  if (totalIssues) {
-    lines.push('', typeHeader('book', totalIssues, 'spelling', 'cspell'));
-    for (const [file, words] of Object.entries(spellingIssues)) {
+  if (!totalIssues) {
+    return annotations;
+  }
+
+  lines.push('', typeHeader('book', totalIssues, 'spelling', 'cspell'));
+  for (const [file, words] of Object.entries(spellingIssues)) {
+    try {
       const ext = extname(file).substring(1);
       wrapInFileSection(lines, file, () => {
         for (const {word, suggestions, instances} of Object.values(words)) {
@@ -168,6 +186,9 @@ function createCommentForSpelling(lines: string[], spellingIssues: SpellingTypeI
           });
         }
       });
+    }
+    catch (e) {
+      debug(e.toString());
     }
   }
 
