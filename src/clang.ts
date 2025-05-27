@@ -1,7 +1,7 @@
 import {exec} from 'child_process';
 import {structuredPatch} from 'diff'
-import {readdirSync, readFileSync} from 'fs';
-import {join} from 'path';
+import {existsSync, readdirSync, readFileSync} from 'fs';
+import {dirname, join} from 'path';
 
 import {ActionParams} from './actionParams';
 import {core} from './github';
@@ -125,16 +125,31 @@ export async function action(params: ActionParams, files: string[]): Promise<Iss
     await runClang(formatCmd, files, issues.format, parseFormatOutput, params);
   }
 
+  issues.tidy = {};
+  let tidyFiles = files;
+  const tidyCmd = ['clang-tidy', '-p', params.build_path];
   if (params.clang_tidy_config) {
-    issues.tidy = {};
-    const tidyCmd = ['clang-tidy', '-p', params.build_path];
-    if (params.clang_tidy_config) {
-      tidyCmd.push('--config-file', params.clang_tidy_config);
-    }
-    verbose('Build path files:');
-    readdirSync(params.build_path).forEach(file => verbose('\t', join(params.build_path, file)));
-    await runClang(tidyCmd, files, issues.tidy, parseTidyOutput, files.map(file => join(process.cwd(), file)));
+    tidyCmd.push('--config-file', params.clang_tidy_config);
   }
+  else {
+    const uniqueDirectories = new Set(files.map(file => dirname(file)));
+    const directoryHasTidyConfig = {};
+    for (const directory of uniqueDirectories) {
+      for (let currentDirectory = directory; true; currentDirectory = dirname(currentDirectory)) {
+        if (existsSync(join(currentDirectory, '.clang-tidy'))) {
+          directoryHasTidyConfig[directory] = true;
+          break;
+        }
+        if (currentDirectory === '.') {
+          break;
+        }
+      }
+    }
+    tidyFiles = tidyFiles.filter(file => directoryHasTidyConfig[dirname(file)]);
+  }
+  verbose('Build path files:');
+  readdirSync(params.build_path).forEach(file => verbose('\t', join(params.build_path, file)));
+  await runClang(tidyCmd, tidyFiles, issues.tidy, parseTidyOutput, files.map(file => join(process.cwd(), file)));
 
   return issues;
 }
