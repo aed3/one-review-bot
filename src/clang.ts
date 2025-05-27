@@ -131,16 +131,13 @@ export async function action(params: ActionParams, files: string[]): Promise<Iss
   if (params.clang_tidy_config) {
     tidyCmd.push('--config-file', params.clang_tidy_config);
   }
-  else {
+  else if (!existsSync('.clang-tidy')) {
     const uniqueDirectories = new Set(files.map(file => dirname(file)));
     const directoryHasTidyConfig = {};
     for (const directory of uniqueDirectories) {
-      for (let currentDirectory = directory; true; currentDirectory = dirname(currentDirectory)) {
+      for (let currentDirectory = directory; currentDirectory !== '.'; currentDirectory = dirname(currentDirectory)) {
         if (existsSync(join(currentDirectory, '.clang-tidy'))) {
           directoryHasTidyConfig[directory] = true;
-          break;
-        }
-        if (currentDirectory === '.') {
           break;
         }
       }
