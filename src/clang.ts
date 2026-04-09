@@ -1,16 +1,16 @@
-import {exec} from 'child_process';
-import {structuredPatch} from 'diff'
-import {existsSync, readdirSync, readFileSync} from 'fs';
-import {dirname, join} from 'path';
+import { exec } from 'child_process';
+import { structuredPatch } from 'diff'
+import { existsSync, readdirSync, readFileSync } from 'fs';
+import { dirname, join } from 'path';
 
-import {ActionParams} from './actionParams';
-import {core} from './github';
-import {info, IssueLevel, verbose} from './log';
-import {ClangIssueDetails, ClangTypeIssues, Issues} from './post';
+import { ActionParams } from './actionParams';
+import { core } from './github';
+import { info, IssueLevel, verbose } from './log';
+import { ClangIssueDetails, ClangTypeIssues, Issues } from './post';
 
 function parseFormatOutput(newCode: string, details: ClangIssueDetails[], file: string, params: ActionParams) {
   const oldCode = readFileSync(file, 'utf8');
-  const diff = structuredPatch(file, file, oldCode, newCode, '', '', {context: 1, newlineIsToken: true});
+  const diff = structuredPatch(file, file, oldCode, newCode, '', '', { context: 1, newlineIsToken: true });
 
   for (const hunk of diff.hunks) {
     let name = '';
@@ -40,14 +40,14 @@ function parseFormatOutput(newCode: string, details: ClangIssueDetails[], file: 
 
 const NOTE_HEADER = /^(.*):(\d+):(\d+):\s(\w+):(.*)\[(.*)\]$/;
 function parseTidyOutput(result: string, details: ClangIssueDetails[], file: string, files: string[]) {
-  let detail: Partial<ClangIssueDetails>|null = null;
+  let detail: Partial<ClangIssueDetails> | null = null;
   let replacementLines: string[] = [];
   const lines = result.split('\n');
   verbose('\t ', lines.length.toString(), 'line output from clang:');
   lines.forEach(line => verbose('\t  ' + line));
 
   const addDetail = () => {
-    details.push({...detail, replacement: replacementLines.join('\n').trim()} as ClangIssueDetails);
+    details.push({ ...detail, replacement: replacementLines.join('\n').trim() } as ClangIssueDetails);
     detail = null;
     replacementLines = [];
   };
@@ -91,8 +91,20 @@ async function runClang(clangCmd: string[],
   await Promise.all(files.map(file => {
     return new Promise<void>(resolve => {
       let result = '';
-      exec(clangCmd.concat(file).join(' '), (error, stdout) => {
+      const warnings = [1, 3, 5, 7, 8, 9].map(minutes => setTimeout(
+        () => info('\t', file, 'has taken', (minutes * 60).toString(), 'seconds to process'),
+        1000 * 60 * minutes,
+      ));
+
+      exec(clangCmd.concat(file).join(' '), { timeout: 1000 * 60 * 10 }, (error, stdout) => {
         info('\t', file);
+        warnings.map(clearTimeout);
+        if (error.killed) {
+          info('\t\t', 'Process ended early with', error.signal?.toString() || 'unknown', 'signal');
+          resolve();
+          return;
+        }
+
         if (error) {
           verbose('\t\tError: ' + error.message.replace(/\n/g, '\t\n'));
           result = error.message + '\n' + (stdout || '');
@@ -108,7 +120,7 @@ async function runClang(clangCmd: string[],
     });
   }));
 
-  info(clangCmd[0] + ' Compete');
+  info(clangCmd[0] + ' Complete');
   core.endGroup();
 }
 

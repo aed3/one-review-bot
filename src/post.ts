@@ -1,11 +1,11 @@
 
-import {extname} from 'path'
+import { extname } from 'path'
 
-import {ContextInstance, GitHubInstance} from './github';
-import {AnnotationProperties, debug, info, IssueLevel, verbose} from './log';
+import { ContextInstance, GitHubInstance } from './github';
+import { AnnotationProperties, debug, info, IssueLevel, verbose } from './log';
 
-type ClangType = 'tidy'|'format';
-type IssueType = 'spelling'|ClangType;
+type ClangType = 'tidy' | 'format';
+type IssueType = 'spelling' | ClangType;
 
 export interface IssueDetails {
   line: number;
@@ -26,7 +26,7 @@ export interface WordSpellingIssues {
 }
 
 export interface SpellingTypeIssues {
-  [filename: string]: {[word: string]: WordSpellingIssues};
+  [filename: string]: { [word: string]: WordSpellingIssues };
 }
 
 export interface ClangTypeIssues {
@@ -153,7 +153,7 @@ function createCommentForSpelling(lines: string[], spellingIssues: SpellingTypeI
   const totalIssues =
     Object.values(spellingIssues)
       .reduce((total, words) =>
-                total + Object.values(words).reduce((subTotal, issues) => subTotal + issues.instances.length, 0),
+        total + Object.values(words).reduce((subTotal, issues) => subTotal + issues.instances.length, 0),
         0);
 
   if (!totalIssues) {
@@ -165,7 +165,7 @@ function createCommentForSpelling(lines: string[], spellingIssues: SpellingTypeI
     try {
       const ext = extname(file).substring(1);
       wrapInFileSection(lines, file, () => {
-        for (const {word, suggestions, instances} of Object.values(words)) {
+        for (const { word, suggestions, instances } of Object.values(words)) {
           const title = `"${word}": Unknown word`;
           const message = `${suggestions.map(s => '`' + s + '`').join(', ')}`;
           wrapInOpenedSection(lines, `<strong>${title}</strong>`, () => {
@@ -217,7 +217,7 @@ function createPullRequestComment(issues: Issues) {
     lines.splice(1, 0, '# :robot: One Review Bot Results');
   }
 
-  return {comment: lines.join('\n'), allAnnotations};
+  return { comment: lines.join('\n'), allAnnotations };
 }
 
 async function getExistingReviewComments(githubContext: ContextInstance, octokit: GitHubInstance, prNumber: number) {
@@ -232,7 +232,7 @@ async function getExistingReviewComments(githubContext: ContextInstance, octokit
 }
 
 export async function postComments(issues: Issues, githubContext: ContextInstance, octokit: GitHubInstance) {
-  const {comment, allAnnotations} = createPullRequestComment(issues);
+  const { comment, allAnnotations } = createPullRequestComment(issues);
 
   const prNumber = githubContext.payload.pull_request?.number;
   const pastComments = await getExistingReviewComments(githubContext, octokit, prNumber);

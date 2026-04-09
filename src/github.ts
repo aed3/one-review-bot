@@ -1,9 +1,9 @@
 import * as gh_core from '@actions/core';
-import {getOctokit as gh_getOctokit} from '@actions/github';
-import {Context as gh_Context} from '@actions/github/lib/context';
-import {GitHub as gh_GitHub} from '@actions/github/lib/utils';
-import {Octokit as gh_Octokit} from '@octokit/core';
-import {restEndpointMethods as gh_restEndpointMethods} from '@octokit/plugin-rest-endpoint-methods';
+import { getOctokit as gh_getOctokit } from '@actions/github';
+import { Context as gh_Context } from '@actions/github/lib/context';
+import { GitHub as gh_GitHub } from '@actions/github/lib/utils';
+import { Octokit as gh_Octokit } from '@octokit/core';
+import { restEndpointMethods as gh_restEndpointMethods } from '@octokit/plugin-rest-endpoint-methods';
 
 const DEBUGGING = !!process.env.DEBUG;
 
@@ -40,27 +40,27 @@ if (DEBUGGING) {
   const db_rest: any = {
     pulls: {
       async listCommits() {
-        return {data: [{sha: '0000000000'}]};
+        return { data: [{ sha: '0000000000' }] };
       },
     },
     repos: {
       async getCommit() {
         return {
           data: {
-            files: [{filename: 'test1.cpp'}, {filename: 'test1.hpp'}, {filename: 'test2.cpp'}, {filename: 'test2.hpp'}],
+            files: [{ filename: 'test1.cpp' }, { filename: 'test1.hpp' }, { filename: 'test2.cpp' }, { filename: 'test2.hpp' }],
           }
         }
       },
     },
     issues: {
       async createComment(obj) {
-        const {body, ...rest} = obj;
+        const { body, ...rest } = obj;
         console.log('issue.createComment', rest, 'body:\n', body);
       },
       async listComments() {
         return {
           data: [{
-            user: {type: 'Bot'},
+            user: { type: 'Bot' },
             body: '<!-- one-review-bot comment -->',
             pull_request_url: 'https://github.com/user/repo/pull/1',
           }],
@@ -72,13 +72,13 @@ if (DEBUGGING) {
   class db_Context {
     constructor() {
     }
-    payload = {pull_request: {number: 1}};
-    repo = {owner: 'user', repo: 'repo'};
-    issue = {owner: 'user', repo: 'repo', number: 1};
+    payload = { pull_request: { number: 1 } };
+    repo = { owner: 'user', repo: 'repo' };
+    issue = { owner: 'user', repo: 'repo', number: 1 };
   };
 
-  const db_getOctokit: any = () => ({rest: db_rest});
-  const db_restEndpointMethods: any = () => ({rest: db_rest});
+  const db_getOctokit: any = () => ({ rest: db_rest });
+  const db_restEndpointMethods: any = () => ({ rest: db_rest });
 
   EXPORT = {
     core: db_core,

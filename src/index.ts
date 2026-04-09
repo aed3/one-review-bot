@@ -1,14 +1,14 @@
-import {execSync} from 'child_process'
+import { execSync } from 'child_process'
 
-execSync('npm i', {cwd: __dirname});
+execSync('npm i', { cwd: __dirname });
 
-import {getActionParams} from './actionParams';
-import {action as clang} from './clang'
-import {action as cspell} from './cspell'
-import {gatherFiles} from './findFiles';
-import {Context, core, getOctokit} from './github'
-import {info, makeAnnotations, setVerbose, verbose} from './log';
-import {pluralize, postComments} from './post';
+import { getActionParams } from './actionParams';
+import { action as clang } from './clang'
+import { action as cspell } from './cspell'
+import { gatherFiles } from './findFiles';
+import { Context, core, getOctokit } from './github'
+import { info, makeAnnotations, setVerbose, verbose } from './log';
+import { pluralize, postComments } from './post';
 
 export async function run(): Promise<void> {
   const initialCwd = process.cwd();

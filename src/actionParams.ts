@@ -1,7 +1,7 @@
-import {existsSync} from 'fs';
-import {join} from 'path';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
-import {core} from './github'
+import { core } from './github'
 
 export interface ActionParams {
   github_token: string;
@@ -22,7 +22,7 @@ export interface ActionParams {
    */
   verbose: boolean;
 
-  provided?: {[key in keyof ActionParams]?: boolean};
+  provided?: { [key in keyof ActionParams]?: boolean };
 }
 
 const defaultActionParams: ActionParams = {
@@ -39,10 +39,10 @@ const defaultActionParams: ActionParams = {
   verbose: false,
 };
 
-type ValidationFunction = (params: ActionParams) => string|undefined;
+type ValidationFunction = (params: ActionParams) => string | undefined;
 
 function applyDefaults(params: ActionParams): ActionParams {
-  const results = {...params, provided: {}};
+  const results = { ...params, provided: {} };
   for (const [key, value] of Object.entries(defaultActionParams)) {
     results.provided[key] = !['', undefined, NaN].includes(results[key]);
     results[key] = results.provided[key] ? results[key] : value;
@@ -129,7 +129,7 @@ function validateActionParams(params: ActionParams) {
   }
 }
 
-function tf(v: string|boolean|number): boolean {
+function tf(v: string | boolean | number): boolean {
   const mapValues: Record<string, boolean> = {
     true: true,
     t: true,
@@ -147,7 +147,7 @@ function tf(v: string|boolean|number): boolean {
 
 export function getActionParams(): ActionParams {
   const params = applyDefaults({
-    github_token: core.getInput('github_token', {required: true}),
+    github_token: core.getInput('github_token', { required: true }),
     incremental_files_only: tf(core.getInput('incremental_files_only')),
     files_config: core.getInput('files_config'),
     cspell_config: core.getInput('cspell_config'),

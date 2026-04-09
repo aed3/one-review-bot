@@ -1,20 +1,20 @@
-import {GlobMatcher} from 'cspell-glob';
-import {readdirSync, readFileSync} from 'fs';
-import {join} from 'path';
+import { GlobMatcher } from 'cspell-glob';
+import { readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
 
-import {ActionParams} from './actionParams';
-import {ContextInstance, GitHubInstance, restEndpointMethods} from './github';
-import {info, verbose} from './log';
+import { ActionParams } from './actionParams';
+import { ContextInstance, GitHubInstance, restEndpointMethods } from './github';
+import { info, verbose } from './log';
 
-function isString(s: string|unknown) {
+function isString(s: string | unknown) {
   return typeof s === 'string';
 }
 
 async function* fetchFilesForCommitsX(githubContext: ContextInstance, octokit: GitHubInstance, commitIds: string[]) {
-  const {owner, repo} = githubContext.repo;
-  const {rest} = restEndpointMethods(octokit);
+  const { owner, repo } = githubContext.repo;
+  const { rest } = restEndpointMethods(octokit);
   for (const ref of commitIds) {
-    const commit = await rest.repos.getCommit({owner, repo, ref});
+    const commit = await rest.repos.getCommit({ owner, repo, ref });
     const files = commit.data.files;
     if (!files) continue;
     for (const f of files) {
@@ -34,15 +34,15 @@ async function fetchFilesForCommits(githubContext: ContextInstance, octokit: Git
 }
 
 async function getPullRequestFiles(githubContext: ContextInstance, octokit: GitHubInstance) {
-  const {owner, repo, number: pull_number} = githubContext.issue;
-  const {rest} = restEndpointMethods(octokit);
-  const commits = await rest.pulls.listCommits({owner, repo, pull_number});
+  const { owner, repo, number: pull_number } = githubContext.issue;
+  const { rest } = restEndpointMethods(octokit);
+  const commits = await rest.pulls.listCommits({ owner, repo, pull_number });
 
   return fetchFilesForCommits(githubContext, octokit, commits.data.map((c) => c.sha).filter(isString));
 }
 
 function filterFiles(globPattern: string, files: string[]) {
-  const matcher = new GlobMatcher(globPattern, {dot: true});
+  const matcher = new GlobMatcher(globPattern, { dot: true });
   const kept: string[] = [];
   const filtered: string[] = [];
   for (const file of files) {
@@ -55,7 +55,7 @@ function filterFiles(globPattern: string, files: string[]) {
 
 function* walkDirSync(dir: string) {
   verbose('Searching', dir);
-  const files = readdirSync(dir, {withFileTypes: true});
+  const files = readdirSync(dir, { withFileTypes: true });
   for (const file of files) {
     if (file.isDirectory()) {
       yield* walkDirSync(join(dir, file.name));
@@ -74,7 +74,7 @@ export async function gatherFiles(githubContext: ContextInstance, octokit: GitHu
   if (params.incremental_files_only) {
     const prNumber = githubContext.payload.pull_request?.number;
     if (prNumber) {
-      info('Running on files change in PR#', prNumber.toString());
+      info('Running on files changed in PR#', prNumber.toString());
       const eventFiles = await getPullRequestFiles(githubContext, octokit);
       files.push(...eventFiles);
     }

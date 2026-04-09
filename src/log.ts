@@ -1,6 +1,6 @@
 
-import {ActionParams} from './actionParams';
-import {AnnotationProperties as GHAnnotationProperties, core} from './github';
+import { ActionParams } from './actionParams';
+import { AnnotationProperties as GHAnnotationProperties, core } from './github';
 
 let isVerbose = false;
 
@@ -8,7 +8,7 @@ export function setVerbose(params: ActionParams) {
   isVerbose = params.verbose;
 }
 
-function coreLog(message: string[], level: 'debug'|'info'|'warning'|'error', props?: any) {
+function coreLog(message: string[], level: 'debug' | 'info' | 'warning' | 'error', props?: any) {
   const logger = core[level] as typeof core.error;
   logger(message.join(' '), props);
 }
@@ -25,7 +25,7 @@ export function info(...message: string[]) {
   coreLog(message, 'info');
 }
 
-export type IssueLevel = 'warning'|'error';
+export type IssueLevel = 'warning' | 'error';
 
 export interface AnnotationProperties extends GHAnnotationProperties {
   command: IssueLevel;
