@@ -88,37 +88,42 @@ async function runClang(clangCmd: string[],
   parseClangOutput: (result: string, details: ClangIssueDetails[], file: string, ...extraArgs: any[]) => void,
   ...extraArgs: any[]) {
   core.startGroup('Running ' + clangCmd[0]);
-  await Promise.all(files.map(file => {
-    return new Promise<void>(resolve => {
-      let result = '';
-      const warnings = [1, 3, 5, 7, 8, 9].map(minutes => setTimeout(
-        () => info('\t', file, 'has taken', (minutes * 60).toString(), 'seconds to process'),
-        1000 * 60 * minutes,
-      ));
+  files = files.slice();
 
-      exec(clangCmd.concat(file).join(' '), { timeout: 1000 * 60 * 10 }, (error, stdout) => {
-        info('\t', file);
-        warnings.map(clearTimeout);
-        if (error?.killed) {
-          info('\t\t', 'Process ended early with', error.signal?.toString() || 'unknown', 'signal');
+  while (files.length) {
+    const loopFiles = files.splice(0, 10);
+    await Promise.all(loopFiles.map(file => {
+      return new Promise<void>(resolve => {
+        let result = '';
+        const warnings = [1, 3, 5, 7, 8, 9].map(minutes => setTimeout(
+          () => info('\t', file, 'has taken', (minutes * 60).toString(), 'seconds to process'),
+          1000 * 60 * minutes,
+        ));
+
+        exec(clangCmd.concat(file).join(' '), { timeout: 1000 * 60 * 10 }, (error, stdout) => {
+          info('\t', file);
+          warnings.map(clearTimeout);
+          if (error?.killed) {
+            info('\t\t', 'Process ended early with', error.signal?.toString() || 'unknown', 'signal');
+            resolve();
+            return;
+          }
+
+          if (error) {
+            verbose('\t\tError: ' + error.message.replace(/\n/g, '\t\n'));
+            result = error.message + '\n' + (stdout || '');
+          }
+          else {
+            result = stdout;
+          }
+
+          typeSuggestion[file] = [];
+          parseClangOutput(result, typeSuggestion[file], file, ...extraArgs);
           resolve();
-          return;
-        }
-
-        if (error) {
-          verbose('\t\tError: ' + error.message.replace(/\n/g, '\t\n'));
-          result = error.message + '\n' + (stdout || '');
-        }
-        else {
-          result = stdout;
-        }
-
-        typeSuggestion[file] = [];
-        parseClangOutput(result, typeSuggestion[file], file, ...extraArgs);
-        resolve();
+        });
       });
-    });
-  }));
+    }));
+  }
 
   info(clangCmd[0] + ' Complete');
   core.endGroup();
