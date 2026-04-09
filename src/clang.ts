@@ -99,7 +99,7 @@ async function runClang(clangCmd: string[],
       exec(clangCmd.concat(file).join(' '), { timeout: 1000 * 60 * 10 }, (error, stdout) => {
         info('\t', file);
         warnings.map(clearTimeout);
-        if (error.killed) {
+        if (error?.killed) {
           info('\t\t', 'Process ended early with', error.signal?.toString() || 'unknown', 'signal');
           resolve();
           return;
